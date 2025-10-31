@@ -233,27 +233,6 @@ function setControlPressed(target, pressed) {
   }
 }
 
-touchControls.addEventListener('pointerdown', (event) => {
-  if (!(event.target instanceof HTMLElement) || event.pointerType === 'mouse') return;
-  setControlPressed(event.target, true);
-  const action = event.target.dataset.action;
-  if (action === 'up') {
-    input.emitLaneShift(-1);
-  } else if (action === 'down') {
-    input.emitLaneShift(1);
-  } else if (action === 'dash') {
-    input.emitDash(true);
-  }
-}, { passive: true });
-
-touchControls.addEventListener('pointerup', (event) => {
-  if (!(event.target instanceof HTMLElement) || event.pointerType === 'mouse') return;
-  setControlPressed(event.target, false);
-  if (event.target.dataset.action === 'dash') {
-    input.emitDash(false);
-  }
-}, { passive: true });
-
 touchControls.addEventListener('touchstart', (event) => {
   if (!(event.target instanceof HTMLElement)) return;
   setControlPressed(event.target, true);
