@@ -616,8 +616,6 @@ export class SpectralSkillShowcase {
       ctx.fillStyle = COLORS.particle;
       ctx.fillRect(particle.x, particle.y, 4, 4);
     });
-
-    this.drawHUD(ctx);
   }
 
   drawMoon(ctx) {
@@ -670,18 +668,4 @@ export class SpectralSkillShowcase {
     }
   }
 
-  drawHUD(ctx) {
-    ctx.fillStyle = 'rgba(12, 6, 22, 0.6)';
-    ctx.fillRect(16, 16, 140, 60);
-    ctx.strokeStyle = COLORS.boothAccent;
-    ctx.lineWidth = 2;
-    ctx.strokeRect(16, 16, 140, 60);
-
-    ctx.fillStyle = '#ffe9c6';
-    ctx.font = '12px "Press Start 2P", monospace';
-    ctx.textBaseline = 'top';
-    ctx.fillText(`Score ${Math.floor(this.score)}`, 24, 24);
-    ctx.fillText(`Skills ${this.skills}`, 24, 42);
-    ctx.fillText(`Streak ${this.streak}`, 24, 58);
-  }
 }

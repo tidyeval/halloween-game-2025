@@ -20,11 +20,6 @@
 
       <section class="game-wrapper">
         <canvas id="game-canvas" width="640" height="360"></canvas>
-        <div class="touch-controls" data-visible="false">
-          <button class="control-btn" data-action="up" aria-label="Move Up">▲</button>
-          <button class="control-btn" data-action="down" aria-label="Move Down">▼</button>
-          <button class="control-btn" data-action="dash" aria-label="Phase Dash">◆</button>
-        </div>
         <div class="dialog dialog--start" id="start-dialog">
           <div class="poster-card">
             <div class="poster-card__glow"></div>
@@ -49,6 +44,11 @@
             <button id="start-button" class="start-intro__cta">Start Shift</button>
           </div>
         </div>
+        <div class="touch-controls" data-visible="false">
+          <button class="control-btn" data-action="up" aria-label="Move Up">▲</button>
+          <button class="control-btn" data-action="down" aria-label="Move Down">▼</button>
+          <button class="control-btn" data-action="dash" aria-label="Phase Dash">◆</button>
+        </div>
         <div class="dialog dialog--gameover" id="gameover-dialog" hidden>
           <h2>Shift Complete</h2>
           <p>Your final showcase score: <span id="final-score">0</span></p>
@@ -59,7 +59,7 @@
       </section>
 
       <footer class="footer">
-        <p>Use arrow keys or swipe controls. Hold dash to phase through incoming chaos once your skill streak glows.</p>
+        <p>Phase through the chaos, collect every skill coin, and keep your streak alive.</p>
       </footer>
     </main>
 

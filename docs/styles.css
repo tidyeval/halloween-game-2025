@@ -103,21 +103,16 @@ body {
 }
 
 .touch-controls {
-  position: absolute;
-  inset: auto 0.5rem 0.75rem;
-  display: grid;
-  grid-template-columns: repeat(3, minmax(72px, 1fr));
-  gap: 0.9rem;
-  opacity: 0;
-  transform: translateY(24px);
-  transition: opacity 0.3s ease, transform 0.3s ease;
-  pointer-events: none;
+  display: none;
+  margin: clamp(0.85rem, 3vw, 1.35rem) auto 0;
+  width: min(100%, 520px);
+  grid-template-columns: repeat(3, minmax(80px, 1fr));
+  gap: clamp(0.6rem, 2.5vw, 1rem);
+  justify-items: center;
 }
 
 .touch-controls[data-visible="true"] {
-  opacity: 1;
-  transform: translateY(0);
-  pointer-events: auto;
+  display: grid;
 }
 
 .control-btn {
