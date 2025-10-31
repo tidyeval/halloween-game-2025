@@ -14,7 +14,6 @@ const finalScoreEl = document.getElementById('final-score');
 const finalStreakEl = document.getElementById('final-streak');
 const toastEl = document.getElementById('toast');
 const touchControls = document.querySelector('.touch-controls');
-const orientationHint = document.getElementById('orientation-hint');
 const audioButton = document.getElementById('audio-button');
 const motionToggle = document.getElementById('reduced-motion-toggle');
 
@@ -47,19 +46,6 @@ function updateAudioButton() {
   if (!audioButton) return;
   audioButton.hidden = audioReady;
 }
-
-function updateOrientationHint() {
-  if (!orientationHint) return;
-  const isPortrait = window.innerHeight > window.innerWidth;
-  const prefersTouch = window.matchMedia('(pointer: coarse)').matches;
-  const shouldShow =
-    isPortrait &&
-    !isGameActive &&
-    startDialog.hidden === false &&
-    prefersTouch;
-  orientationHint.hidden = !shouldShow;
-}
-
 const audio = createAudioController();
 const HAPTIC_PATTERNS = {
   skill: [20],
@@ -83,14 +69,12 @@ const game = new SpectralSkillShowcase(canvas, {
     gameoverDialog.hidden = false;
     touchControls.dataset.visible = 'false';
     isGameActive = false;
-    updateOrientationHint();
     audio.stopTheme();
   },
   onReadyToStart: () => {
     startDialog.hidden = false;
     startButton.disabled = false;
     updateStartButtonLabel();
-    updateOrientationHint();
   },
   onHaptic: (type) => {
     if (!supportsVibrate || reducedMotion) return;
@@ -134,7 +118,6 @@ function startRun() {
   const prefersTouch = window.matchMedia('(pointer: coarse)').matches;
   touchControls.dataset.visible = prefersTouch ? 'true' : 'false';
   isGameActive = true;
-  updateOrientationHint();
   game.setMotionPreference({ reducedMotion });
   game.start();
   audio.rewind();
@@ -183,7 +166,6 @@ document.addEventListener('visibilitychange', () => {
     return;
   }
 
-  updateOrientationHint();
 
   if (isGameActive && wasPausedForVisibility && startDialog.hidden && gameoverDialog.hidden) {
     game.resume();
@@ -215,19 +197,6 @@ if (motionToggle) {
     game.setMotionPreference({ reducedMotion });
   });
 }
-
-const orientationMedia = window.matchMedia('(orientation: portrait)');
-if (orientationMedia.addEventListener) {
-  orientationMedia.addEventListener('change', updateOrientationHint);
-} else if (orientationMedia.addListener) {
-  orientationMedia.addListener(updateOrientationHint);
-}
-
-window.addEventListener('resize', () => {
-  window.requestAnimationFrame(updateOrientationHint);
-});
-
-updateOrientationHint();
 
 function setControlPressed(target, pressed) {
   if (!target) return;
