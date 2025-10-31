@@ -51,7 +51,12 @@ function updateAudioButton() {
 function updateOrientationHint() {
   if (!orientationHint) return;
   const isPortrait = window.innerHeight > window.innerWidth;
-  const shouldShow = isPortrait && !isGameActive && startDialog.hidden === false;
+  const prefersTouch = window.matchMedia('(pointer: coarse)').matches;
+  const shouldShow =
+    isPortrait &&
+    !isGameActive &&
+    startDialog.hidden === false &&
+    prefersTouch;
   orientationHint.hidden = !shouldShow;
 }
 
