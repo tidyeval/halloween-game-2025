@@ -1,0 +1,200 @@
+:root {
+  color-scheme: dark;
+  --bg: #090712;
+  --bg-secondary: #141022;
+  --accent: #ff9b4a;
+  --accent-strong: #ffc766;
+  --electric: #76f2ff;
+  --danger: #ff4f68;
+  --text: #f8f4ff;
+  --muted: #b8a8d6;
+  font-size: 16px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: radial-gradient(circle at 20% 20%, #1d1440, var(--bg));
+  font-family: "Press Start 2P", "VT323", "Courier New", monospace;
+  color: var(--text);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1.5rem;
+  touch-action: manipulation;
+}
+
+@font-face {
+  font-family: "Press Start 2P";
+  src: local("Press Start 2P"), url("https://fonts.gstatic.com/s/pressstart2p/v11/7Au-p_0qiz-afT9Gg0F6M4Q.woff2") format("woff2");
+  font-display: swap;
+}
+
+#app {
+  width: min(100%, 960px);
+  background: rgba(12, 7, 24, 0.9);
+  border: 4px solid var(--accent);
+  border-radius: 8px;
+  box-shadow: 0 0 32px rgba(255, 153, 74, 0.35);
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  row-gap: 1rem;
+  padding: 1.5rem;
+}
+
+.hud {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  text-align: center;
+}
+
+.hud h1 {
+  margin: 0;
+  font-size: clamp(1.25rem, 4vw, 1.75rem);
+  color: var(--accent-strong);
+  text-shadow: 0 0 12px rgba(255, 155, 74, 0.8);
+}
+
+.stats {
+  display: flex;
+  justify-content: center;
+  gap: clamp(0.5rem, 3vw, 1.5rem);
+  font-size: clamp(0.65rem, 3vw, 0.85rem);
+}
+
+.game-wrapper {
+  position: relative;
+  background: linear-gradient(180deg, rgba(20, 16, 34, 0.8) 0%, rgba(9, 7, 18, 0.95) 100%);
+  border: 3px solid var(--bg-secondary);
+  border-radius: 6px;
+  padding: 0.5rem;
+  overflow: hidden;
+}
+
+#game-canvas {
+  display: block;
+  width: 100%;
+  border: 3px solid var(--accent);
+  image-rendering: pixelated;
+  background: repeating-linear-gradient(
+      180deg,
+      rgba(0, 0, 0, 0.1) 0,
+      rgba(0, 0, 0, 0.1) 4px,
+      transparent 4px,
+      transparent 8px
+    ),
+    linear-gradient(180deg, rgba(10, 8, 20, 0.7) 0%, rgba(8, 6, 14, 0.95) 100%);
+}
+
+.touch-controls {
+  position: absolute;
+  inset: auto 0.5rem 0.75rem;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(56px, 1fr));
+  gap: 0.75rem;
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  pointer-events: none;
+}
+
+.touch-controls[data-visible="true"] {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.control-btn {
+  background: linear-gradient(180deg, rgba(118, 242, 255, 0.8), rgba(118, 242, 255, 0.35));
+  color: var(--bg);
+  border: 3px solid var(--electric);
+  border-radius: 6px;
+  padding: 0.5rem 0.25rem;
+  font-size: 1.25rem;
+  font-family: inherit;
+  letter-spacing: 2px;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6);
+  box-shadow: 0 0 16px rgba(118, 242, 255, 0.4);
+}
+
+.control-btn:active {
+  transform: translateY(2px);
+}
+
+.dialog {
+  position: absolute;
+  inset: 50% 1.5rem auto;
+  transform: translateY(-50%);
+  background: rgba(20, 16, 34, 0.95);
+  border: 3px solid var(--accent);
+  border-radius: 8px;
+  padding: 1.5rem;
+  text-align: center;
+  display: grid;
+  gap: 1rem;
+  box-shadow: 0 12px 24px rgba(12, 7, 24, 0.6);
+}
+
+.dialog[hidden] {
+  display: none;
+}
+
+.dialog h2 {
+  margin: 0;
+  color: var(--accent-strong);
+}
+
+.dialog button {
+  background: linear-gradient(180deg, #ff9b4a, #c4621c);
+  color: var(--bg);
+  border: 3px solid var(--accent-strong);
+  border-radius: 6px;
+  padding: 0.65rem 1rem;
+  font-family: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+  box-shadow: 0 0 12px rgba(255, 155, 74, 0.6);
+}
+
+.footer {
+  font-size: clamp(0.6rem, 2.5vw, 0.75rem);
+  color: var(--muted);
+  text-align: center;
+}
+
+.toast {
+  position: absolute;
+  inset: 1rem auto auto 50%;
+  transform: translateX(-50%) translateY(-20px);
+  background: rgba(118, 242, 255, 0.95);
+  color: var(--bg);
+  border: 3px solid var(--electric);
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  font-size: 0.75rem;
+  opacity: 0;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  pointer-events: none;
+}
+
+.toast[data-visible="true"] {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+@media (max-width: 640px) {
+  body {
+    padding: 0.75rem;
+  }
+
+  #app {
+    padding: 1rem;
+  }
+}
