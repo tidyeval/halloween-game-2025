@@ -10,17 +10,11 @@
     <main id="app">
       <header class="hud">
         <h1>Spectral Skill Showcase</h1>
+        <p class="hud-tagline">Collect skill coins, dodge dead projects and meeting zombies, and grow your spectral skill streak.</p>
         <div class="stats">
           <span id="score-label">Score: <strong id="score">0</strong></span>
           <span id="skills-label">Skills: <strong id="skill-count">0</strong></span>
           <span id="streak-label">Streak: <strong id="streak">0</strong></span>
-        </div>
-        <div class="hud-actions">
-          <button type="button" id="audio-button" class="hud-action hud-action--primary" hidden>Enable Sound</button>
-          <label class="hud-action hud-action--toggle">
-            <input type="checkbox" id="reduced-motion-toggle" />
-            <span>Reduced Motion</span>
-          </label>
         </div>
       </header>
 
@@ -32,9 +26,28 @@
           <button class="control-btn" data-action="dash" aria-label="Phase Dash">◆</button>
         </div>
         <div class="dialog dialog--start" id="start-dialog">
-          <h2>Ready to level up your skills?</h2>
-          <p>Collect skill coins, dodge dead projects and meeting zombies, and grow your spectral skill streak.</p>
-          <button id="start-button">Start Shift</button>
+          <div class="poster-card">
+            <div class="poster-card__glow"></div>
+            <div class="poster-card__frame">
+              <div class="poster-card__art">
+                <img src="./sprites/pumpkin-angry.png" alt="" class="poster-card__hero" />
+                <img src="./sprites/skeleton-sprite.png" alt="" class="poster-card__foe poster-card__foe--left" />
+                <img src="./sprites/skeleton-sprite.png" alt="" class="poster-card__foe poster-card__foe--right" />
+                <img src="./sprites/gold-coin.png" alt="" class="poster-card__coin poster-card__coin--one" />
+                <img src="./sprites/gold-coin.png" alt="" class="poster-card__coin poster-card__coin--two" />
+                <div class="poster-card__house poster-card__house--one"></div>
+                <div class="poster-card__house poster-card__house--two"></div>
+                <div class="poster-card__house poster-card__house--three"></div>
+              </div>
+              <div class="poster-card__footer">
+                <span class="poster-card__studio">Pixel Frights Studios</span>
+                <span class="poster-card__year">2025 Edition</span>
+              </div>
+            </div>
+          </div>
+          <div class="start-intro">
+            <button id="start-button" class="start-intro__cta">Start Shift</button>
+          </div>
         </div>
         <div class="dialog dialog--gameover" id="gameover-dialog" hidden>
           <h2>Shift Complete</h2>

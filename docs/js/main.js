@@ -14,9 +14,6 @@ const finalScoreEl = document.getElementById('final-score');
 const finalStreakEl = document.getElementById('final-streak');
 const toastEl = document.getElementById('toast');
 const touchControls = document.querySelector('.touch-controls');
-const audioButton = document.getElementById('audio-button');
-const motionToggle = document.getElementById('reduced-motion-toggle');
-
 startDialog.hidden = true;
 startButton.disabled = true;
 startButton.textContent = 'Loading assets...';
@@ -24,27 +21,13 @@ startButton.textContent = 'Loading assets...';
 const supportsVibrate = typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function';
 const systemReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-let audioReady = false;
 let reducedMotion = systemReducedMotion;
 let isGameActive = false;
 let wasPausedForVisibility = false;
 let startEventLock = false;
 
-if (motionToggle) {
-  motionToggle.checked = reducedMotion;
-}
-
 function updateStartButtonLabel() {
-  if (startButton.disabled) {
-    startButton.textContent = 'Loading assets...';
-    return;
-  }
-  startButton.textContent = audioReady ? 'Start Shift' : 'Start (Muted)';
-}
-
-function updateAudioButton() {
-  if (!audioButton) return;
-  audioButton.hidden = audioReady;
+  startButton.textContent = startButton.disabled ? 'Loading assets...' : 'Start Shift';
 }
 const audio = createAudioController();
 const HAPTIC_PATTERNS = {
@@ -174,29 +157,9 @@ document.addEventListener('visibilitychange', () => {
   wasPausedForVisibility = false;
 });
 
-audio.onAvailability((ready) => {
-  audioReady = ready;
+audio.onAvailability(() => {
   updateStartButtonLabel();
-  updateAudioButton();
 });
-
-if (audioButton) {
-  audioButton.addEventListener('click', async () => {
-    const success = await audio.prime();
-    audioReady = success;
-    updateStartButtonLabel();
-    updateAudioButton();
-    showToast(success ? 'Sound enabled!' : 'Sound is still muted by the browser.');
-  });
-  updateAudioButton();
-}
-
-if (motionToggle) {
-  motionToggle.addEventListener('change', (event) => {
-    reducedMotion = event.target.checked;
-    game.setMotionPreference({ reducedMotion });
-  });
-}
 
 function setControlPressed(target, pressed) {
   if (!target) return;
