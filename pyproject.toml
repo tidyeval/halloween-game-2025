@@ -1,0 +1,27 @@
+[project]
+name = "halloween-game-2025"
+version = "0.1.0"
+description = "Python Project"
+authors = [
+    { name = "Tino Kanngiesser", email = "tinokanngiesser@gmail.com" }
+]
+requires-python = ">=3.12"
+
+dependencies = [
+    "numpy",
+    "pandas",
+    "requests",
+    "python-dotenv",
+    "pytest",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest-mock>=3.14.0",
+    "pytest>=8.3.3,<9.0.0"
+]
+
+[tool.pytest.ini_options]
+pythonpath = "src"
+
+
