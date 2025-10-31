@@ -123,8 +123,8 @@ const generateStars = (count) =>
     phase: Math.random() * Math.PI * 2,
   }));
 
-function createParticleBurst(x, y, lane) {
-  return Array.from({ length: 6 }, () => ({
+function createParticleBurst(x, y, lane, count = 6) {
+  return Array.from({ length: count }, () => ({
     x,
     y,
     lane,
@@ -146,6 +146,9 @@ export class SpectralSkillShowcase {
     this.stars = generateStars(22);
     this.assetsReady = false;
     this.sprites = null;
+    this.preferences = { reducedMotion: false };
+    this.lowPowerTimer = 0;
+    this.hasActiveRun = false;
 
     this.loop = this.loop.bind(this);
     this.handleResize = this.handleResize.bind(this);
@@ -197,6 +200,8 @@ export class SpectralSkillShowcase {
     this.elapsed = 0;
     this.timeSinceCollect = 0;
     this.pendingLaneShift = 0;
+    this.lowPowerTimer = 0;
+    this.hasActiveRun = false;
   }
 
   handleResize() {
@@ -229,6 +234,7 @@ export class SpectralSkillShowcase {
     this.resetState();
     this.running = true;
     this.lastTimestamp = performance.now();
+    this.hasActiveRun = true;
     requestAnimationFrame(this.loop);
   }
 
@@ -236,9 +242,26 @@ export class SpectralSkillShowcase {
     this.running = false;
   }
 
+  resume() {
+    if (!this.assetsReady || this.running || !this.hasActiveRun) return;
+    this.running = true;
+    this.lastTimestamp = performance.now();
+    requestAnimationFrame(this.loop);
+  }
+
+  isActive() {
+    return this.hasActiveRun && this.assetsReady;
+  }
+
   queueLaneShift(direction) {
     if (!this.assetsReady) return;
     this.pendingLaneShift = direction;
+  }
+
+  setMotionPreference(preferences = {}) {
+    if (typeof preferences.reducedMotion === 'boolean') {
+      this.preferences.reducedMotion = preferences.reducedMotion;
+    }
   }
 
   setDash(state) {
@@ -275,8 +298,17 @@ export class SpectralSkillShowcase {
     if (!this.assetsReady) return;
     this.elapsed += delta;
     this.timeSinceCollect += delta;
-    const bobFrequency = this.player.phaseActive ? 5.2 : 3.8;
-    const bobAmplitude = this.player.phaseActive ? 9 : 6;
+    if (delta > 0.06) {
+      this.lowPowerTimer = Math.min(3, this.lowPowerTimer + delta);
+    } else if (this.lowPowerTimer > 0) {
+      this.lowPowerTimer = Math.max(0, this.lowPowerTimer - delta * 0.5);
+    }
+    const reducedMotion = this.preferences.reducedMotion;
+    const lowPowerActive = this.lowPowerTimer > 0;
+    const motionScale = (reducedMotion ? 0.35 : 1) * (lowPowerActive ? 0.7 : 1);
+    const bobFrequency = (this.player.phaseActive ? 5.2 : 3.8) * (reducedMotion ? 0.85 : 1);
+    const baseAmplitude = this.player.phaseActive ? 9 : 6;
+    const bobAmplitude = Math.max(0.5, baseAmplitude * motionScale);
     this.player.bob = Math.sin((this.elapsed + this.player.lane * 0.35) * bobFrequency) * bobAmplitude;
 
     if (this.pendingLaneShift !== 0) {
@@ -297,10 +329,10 @@ export class SpectralSkillShowcase {
       this.player.phaseCooldown = Math.max(0, this.player.phaseCooldown - delta);
     }
 
-    const speedBoost = CONFIG.baseSpeed + this.elapsed * 12;
+    const speedBoost = (CONFIG.baseSpeed + this.elapsed * 12) * (lowPowerActive ? 0.8 : 1);
 
     this.backgroundElements.forEach((element) => {
-      element.x -= (element.speed + this.elapsed * 4) * delta;
+      element.x -= (element.speed + this.elapsed * 4 * (lowPowerActive ? 0.7 : 1)) * delta;
       if (element.x < -120) {
         element.x = CONFIG.baseWidth + randomRange(40, 160);
         element.lane = Math.floor(Math.random() * CONFIG.lanes);
@@ -330,20 +362,22 @@ export class SpectralSkillShowcase {
     }
 
     if (this.spawnTimers.background <= 0) {
-      if (this.backgroundElements.length < 9) {
-        this.backgroundElements.push({
-          x: CONFIG.baseWidth + randomRange(80, 240),
-          lane: Math.floor(Math.random() * CONFIG.lanes),
-          speed: randomRange(18, 32),
-          type: 'booth',
-          accentOffset: Math.random(),
-        });
-      } else {
-        const element = this.backgroundElements[Math.floor(Math.random() * this.backgroundElements.length)];
-        element.x = CONFIG.baseWidth + randomRange(80, 200);
-        element.lane = Math.floor(Math.random() * CONFIG.lanes);
-        element.speed = randomRange(18, 32);
-        element.accentOffset = Math.random();
+      if (!(lowPowerActive && Math.random() < 0.55)) {
+        if (this.backgroundElements.length < 9) {
+          this.backgroundElements.push({
+            x: CONFIG.baseWidth + randomRange(80, 240),
+            lane: Math.floor(Math.random() * CONFIG.lanes),
+            speed: randomRange(18, 32),
+            type: 'booth',
+            accentOffset: Math.random(),
+          });
+        } else {
+          const element = this.backgroundElements[Math.floor(Math.random() * this.backgroundElements.length)];
+          element.x = CONFIG.baseWidth + randomRange(80, 200);
+          element.lane = Math.floor(Math.random() * CONFIG.lanes);
+          element.speed = randomRange(18, 32);
+          element.accentOffset = Math.random();
+        }
       }
       this.spawnTimers.background = randomRange(...CONFIG.backgroundSpawn);
     }
@@ -353,12 +387,12 @@ export class SpectralSkillShowcase {
       entity.age += delta;
       if (entity.type === 'enemy') {
         if (entity.variant === 'zombie') {
-          entity.y = entity.baseY + Math.sin((this.elapsed + entity.age) * 3.2) * 6;
+          entity.y = entity.baseY + Math.sin((this.elapsed + entity.age) * 3.2) * 6 * motionScale;
         } else {
-          entity.y = entity.baseY + Math.sin((this.elapsed + entity.age) * 2.6) * 3;
+          entity.y = entity.baseY + Math.sin((this.elapsed + entity.age) * 2.6) * 3 * motionScale;
         }
       } else if (entity.type === 'skill') {
-        entity.y = entity.baseY + Math.sin((this.elapsed + entity.age) * 4) * 6;
+        entity.y = entity.baseY + Math.sin((this.elapsed + entity.age) * 4) * 6 * motionScale;
       }
     });
 
@@ -393,6 +427,23 @@ export class SpectralSkillShowcase {
       skills: this.skills,
       streak: this.streak,
     });
+  }
+
+  getParticleCount(base = 6) {
+    let count = base;
+    if (this.preferences.reducedMotion) {
+      count = Math.max(1, Math.ceil(count * 0.4));
+    }
+    if (this.lowPowerTimer > 0) {
+      count = Math.max(1, Math.ceil(count * 0.6));
+    }
+    return count;
+  }
+
+  particleBurst(x, y, lane, base = 6) {
+    const count = this.getParticleCount(base);
+    if (count <= 0) return;
+    this.particles.push(...createParticleBurst(x, y, lane, count));
   }
 
   createSkillEntity() {
@@ -454,7 +505,8 @@ export class SpectralSkillShowcase {
           this.spawnTimers.enemy = Math.max(0.18, this.spawnTimers.enemy - 0.12);
           const sprite = entity.sprite;
           const burstY = entity.y - sprite.height * (sprite.anchorY ?? 0.5) + sprite.height * 0.4;
-          this.particles.push(...createParticleBurst(entity.x, burstY, entity.lane));
+          this.particleBurst(entity.x, burstY, entity.lane);
+          this.callbacks.onHaptic?.('skill');
 
           if (!this.player.phaseReady && this.streak > 0 && this.streak % CONFIG.dashUnlock === 0) {
             this.player.phaseReady = true;
@@ -476,7 +528,7 @@ export class SpectralSkillShowcase {
           if (this.player.phaseActive) {
             const sprite = entity.sprite;
             const burstY = entity.y - sprite.height * (sprite.anchorY ?? 0.5) + sprite.height * 0.3;
-            this.particles.push(...createParticleBurst(entity.x, burstY, entity.lane));
+            this.particleBurst(entity.x, burstY, entity.lane);
             entity.x = -500;
             const phaseMessage = entity.variant === 'skeleton'
               ? 'Phased past lingering dead projects!'
@@ -487,6 +539,7 @@ export class SpectralSkillShowcase {
               streak: this.streak,
               highlight: phaseMessage,
             });
+            this.callbacks.onHaptic?.('phase');
           } else {
             const failMessage = entity.variant === 'skeleton'
               ? 'Dead projects piled up - shift reset.'
@@ -497,6 +550,7 @@ export class SpectralSkillShowcase {
               streak: this.streak,
               highlight: failMessage,
             });
+            this.callbacks.onHaptic?.('hit');
             this.triggerGameOver();
             return;
           }
@@ -509,6 +563,7 @@ export class SpectralSkillShowcase {
 
   triggerGameOver() {
     this.running = false;
+    this.hasActiveRun = false;
     this.callbacks.onGameOver?.({
       score: this.score,
       streak: this.bestStreak,

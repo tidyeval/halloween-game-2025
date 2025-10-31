@@ -14,12 +14,26 @@ const finalScoreEl = document.getElementById('final-score');
 const finalStreakEl = document.getElementById('final-streak');
 const toastEl = document.getElementById('toast');
 const touchControls = document.querySelector('.touch-controls');
+const orientationHint = document.getElementById('orientation-hint');
+const audioButton = document.getElementById('audio-button');
+const motionToggle = document.getElementById('reduced-motion-toggle');
 
 startDialog.hidden = true;
 startButton.disabled = true;
 startButton.textContent = 'Loading assets...';
 
+const supportsVibrate = typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function';
+const systemReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
 let audioReady = false;
+let reducedMotion = systemReducedMotion;
+let isGameActive = false;
+let wasPausedForVisibility = false;
+let startEventLock = false;
+
+if (motionToggle) {
+  motionToggle.checked = reducedMotion;
+}
 
 function updateStartButtonLabel() {
   if (startButton.disabled) {
@@ -29,7 +43,25 @@ function updateStartButtonLabel() {
   startButton.textContent = audioReady ? 'Start Shift' : 'Start (Muted)';
 }
 
+function updateAudioButton() {
+  if (!audioButton) return;
+  audioButton.hidden = audioReady;
+}
+
+function updateOrientationHint() {
+  if (!orientationHint) return;
+  const isPortrait = window.innerHeight > window.innerWidth;
+  const shouldShow = isPortrait && !isGameActive && startDialog.hidden === false;
+  orientationHint.hidden = !shouldShow;
+}
+
 const audio = createAudioController();
+const HAPTIC_PATTERNS = {
+  skill: [20],
+  phase: [10, 30, 10],
+  hit: [120, 40, 100],
+};
+
 const game = new SpectralSkillShowcase(canvas, {
   onScore: ({ score, skills, streak, highlight }) => {
     scoreEl.textContent = Math.floor(score);
@@ -45,14 +77,28 @@ const game = new SpectralSkillShowcase(canvas, {
     finalStreakEl.textContent = streak;
     gameoverDialog.hidden = false;
     touchControls.dataset.visible = 'false';
+    isGameActive = false;
+    updateOrientationHint();
     audio.stopTheme();
   },
   onReadyToStart: () => {
     startDialog.hidden = false;
     startButton.disabled = false;
     updateStartButtonLabel();
+    updateOrientationHint();
+  },
+  onHaptic: (type) => {
+    if (!supportsVibrate || reducedMotion) return;
+    const pattern = HAPTIC_PATTERNS[type] || [18];
+    try {
+      navigator.vibrate(pattern);
+    } catch (error) {
+      // Ignore vibration errors on unsupported devices.
+    }
   },
 });
+
+game.setMotionPreference({ reducedMotion });
 
 const input = createInputController({
   onMove: (direction) => game.queueLaneShift(direction),
@@ -80,13 +126,15 @@ function startRun() {
   }
   toastEl.dataset.visible = 'false';
   toastEl.hidden = true;
-  touchControls.dataset.visible = window.matchMedia('(pointer: coarse)').matches ? 'true' : 'false';
+  const prefersTouch = window.matchMedia('(pointer: coarse)').matches;
+  touchControls.dataset.visible = prefersTouch ? 'true' : 'false';
+  isGameActive = true;
+  updateOrientationHint();
+  game.setMotionPreference({ reducedMotion });
   game.start();
   audio.rewind();
   audio.playTheme();
 }
-
-let startEventLock = false;
 
 function handleStartEvent(event) {
   if (startButton.disabled) return;
@@ -117,28 +165,98 @@ startButton.addEventListener('pointerdown', handleStartEvent, { passive: false }
 restartButton.addEventListener('pointerdown', handleRestartEvent, { passive: false });
 startButton.addEventListener('touchstart', handleStartEvent, { passive: false });
 restartButton.addEventListener('touchstart', handleRestartEvent, { passive: false });
-
 startButton.addEventListener('click', handleStartEvent);
 restartButton.addEventListener('click', handleRestartEvent);
 
 document.addEventListener('visibilitychange', () => {
   if (document.hidden) {
+    if (isGameActive) {
+      game.pause();
+      wasPausedForVisibility = true;
+    }
     audio.stopTheme();
     return;
   }
-  if (!startDialog.hidden || !gameoverDialog.hidden) {
-    return;
+
+  updateOrientationHint();
+
+  if (isGameActive && wasPausedForVisibility && startDialog.hidden && gameoverDialog.hidden) {
+    game.resume();
+    audio.playTheme();
   }
-  audio.playTheme();
+  wasPausedForVisibility = false;
 });
 
 audio.onAvailability((ready) => {
   audioReady = ready;
   updateStartButtonLabel();
+  updateAudioButton();
 });
+
+if (audioButton) {
+  audioButton.addEventListener('click', async () => {
+    const success = await audio.prime();
+    audioReady = success;
+    updateStartButtonLabel();
+    updateAudioButton();
+    showToast(success ? 'Sound enabled!' : 'Sound is still muted by the browser.');
+  });
+  updateAudioButton();
+}
+
+if (motionToggle) {
+  motionToggle.addEventListener('change', (event) => {
+    reducedMotion = event.target.checked;
+    game.setMotionPreference({ reducedMotion });
+  });
+}
+
+const orientationMedia = window.matchMedia('(orientation: portrait)');
+if (orientationMedia.addEventListener) {
+  orientationMedia.addEventListener('change', updateOrientationHint);
+} else if (orientationMedia.addListener) {
+  orientationMedia.addListener(updateOrientationHint);
+}
+
+window.addEventListener('resize', () => {
+  window.requestAnimationFrame(updateOrientationHint);
+});
+
+updateOrientationHint();
+
+function setControlPressed(target, pressed) {
+  if (!target) return;
+  if (pressed) {
+    target.dataset.pressed = 'true';
+  } else {
+    target.removeAttribute('data-pressed');
+  }
+}
+
+touchControls.addEventListener('pointerdown', (event) => {
+  if (!(event.target instanceof HTMLElement) || event.pointerType === 'mouse') return;
+  setControlPressed(event.target, true);
+  const action = event.target.dataset.action;
+  if (action === 'up') {
+    input.emitLaneShift(-1);
+  } else if (action === 'down') {
+    input.emitLaneShift(1);
+  } else if (action === 'dash') {
+    input.emitDash(true);
+  }
+}, { passive: true });
+
+touchControls.addEventListener('pointerup', (event) => {
+  if (!(event.target instanceof HTMLElement) || event.pointerType === 'mouse') return;
+  setControlPressed(event.target, false);
+  if (event.target.dataset.action === 'dash') {
+    input.emitDash(false);
+  }
+}, { passive: true });
 
 touchControls.addEventListener('touchstart', (event) => {
   if (!(event.target instanceof HTMLElement)) return;
+  setControlPressed(event.target, true);
   const action = event.target.dataset.action;
   if (action === 'up') {
     input.emitLaneShift(-1);
@@ -151,11 +269,19 @@ touchControls.addEventListener('touchstart', (event) => {
 
 touchControls.addEventListener('touchend', (event) => {
   if (!(event.target instanceof HTMLElement)) return;
-  const action = event.target.dataset.action;
-  if (action === 'dash') {
+  setControlPressed(event.target, false);
+  if (event.target.dataset.action === 'dash') {
     input.emitDash(false);
   }
 }, { passive: true });
+
+touchControls.addEventListener('touchcancel', (event) => {
+  if (!(event.target instanceof HTMLElement)) return;
+  setControlPressed(event.target, false);
+  if (event.target.dataset.action === 'dash') {
+    input.emitDash(false);
+  }
+});
 
 window.addEventListener('keydown', (event) => {
   if (event.key === 'Enter' && startDialog.hidden && gameoverDialog.hidden) {

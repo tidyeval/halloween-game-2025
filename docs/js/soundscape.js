@@ -32,6 +32,22 @@ export function createAudioController() {
     rewind() {
       audio.currentTime = 0;
     },
+    prime() {
+      if (!audio.paused) {
+        return Promise.resolve(true);
+      }
+      return audio.play()
+        .then(() => {
+          notify(true);
+          audio.pause();
+          audio.currentTime = 0;
+          return true;
+        })
+        .catch(() => {
+          notify(false);
+          return false;
+        });
+    },
     onAvailability(callback) {
       listeners.add(callback);
       callback(isReady);

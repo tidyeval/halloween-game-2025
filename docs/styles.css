@@ -69,6 +69,54 @@ body {
   font-size: clamp(0.65rem, 3vw, 0.85rem);
 }
 
+.hud-actions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: clamp(0.5rem, 2.5vw, 1.5rem);
+  flex-wrap: wrap;
+}
+
+.hud-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: inherit;
+  font-size: clamp(0.55rem, 2.6vw, 0.75rem);
+  padding: 0.45rem 0.75rem;
+  border-radius: 6px;
+  border: 2px solid var(--accent);
+  background: rgba(255, 155, 74, 0.12);
+  color: var(--accent-strong);
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.hud-action--primary {
+  background: linear-gradient(180deg, rgba(255, 155, 74, 0.9), rgba(196, 97, 29, 0.85));
+  color: var(--bg);
+  box-shadow: 0 6px 16px rgba(255, 155, 74, 0.45);
+}
+
+.hud-action--primary:active {
+  transform: translateY(1px);
+}
+
+.hud-action--toggle {
+  gap: 0.35rem;
+  border-color: rgba(118, 242, 255, 0.6);
+  background: rgba(118, 242, 255, 0.15);
+  color: var(--electric);
+  padding: 0.35rem 0.75rem;
+}
+
+.hud-action--toggle input {
+  margin: 0;
+  accent-color: var(--electric);
+  width: 0.95rem;
+  height: 0.95rem;
+}
+
 .game-wrapper {
   position: relative;
   background: linear-gradient(180deg, rgba(20, 16, 34, 0.8) 0%, rgba(9, 7, 18, 0.95) 100%);
@@ -81,6 +129,7 @@ body {
 #game-canvas {
   display: block;
   width: 100%;
+  max-height: 70vh;
   border: 3px solid var(--accent);
   image-rendering: pixelated;
   background: repeating-linear-gradient(
@@ -97,8 +146,8 @@ body {
   position: absolute;
   inset: auto 0.5rem 0.75rem;
   display: grid;
-  grid-template-columns: repeat(3, minmax(56px, 1fr));
-  gap: 0.75rem;
+  grid-template-columns: repeat(3, minmax(72px, 1fr));
+  gap: 0.9rem;
   opacity: 0;
   transform: translateY(24px);
   transition: opacity 0.3s ease, transform 0.3s ease;
@@ -116,16 +165,20 @@ body {
   color: var(--bg);
   border: 3px solid var(--electric);
   border-radius: 6px;
-  padding: 0.5rem 0.25rem;
-  font-size: 1.25rem;
+  padding: 0.75rem 0.25rem;
+  font-size: 1.5rem;
   font-family: inherit;
   letter-spacing: 2px;
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6);
-  box-shadow: 0 0 16px rgba(118, 242, 255, 0.4);
+  box-shadow: 0 0 16px rgba(118, 242, 255, 0.4), inset 0 -6px 12px rgba(12, 7, 24, 0.35);
+  min-height: 64px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
-.control-btn:active {
+.control-btn:active,
+.control-btn[data-pressed='true'] {
   transform: translateY(2px);
+  box-shadow: 0 0 22px rgba(118, 242, 255, 0.55);
 }
 
 .dialog {
@@ -189,6 +242,31 @@ body {
   transform: translateX(-50%) translateY(0);
 }
 
+.orientation-hint {
+  position: absolute;
+  inset: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  background: rgba(12, 7, 24, 0.92);
+  border: 3px solid var(--accent);
+  border-radius: 10px;
+  padding: 1.75rem 1.25rem;
+  color: var(--accent-strong);
+  font-size: clamp(0.75rem, 2.8vw, 1rem);
+  line-height: 1.6;
+  box-shadow: 0 18px 36px rgba(12, 7, 24, 0.75);
+  pointer-events: none;
+  backdrop-filter: blur(2px);
+}
+
+.orientation-hint__content span {
+  display: block;
+  font-size: clamp(1.5rem, 5vw, 2.25rem);
+  margin-bottom: 0.75rem;
+}
+
 @media (max-width: 640px) {
   body {
     padding: 0.75rem;
@@ -196,5 +274,46 @@ body {
 
   #app {
     padding: 1rem;
+  }
+}
+
+@media (max-width: 900px) {
+  #app {
+    padding: 1rem;
+  }
+
+  .game-wrapper {
+    padding: 0.4rem;
+  }
+
+  #game-canvas {
+    max-height: 65vh;
+  }
+
+  .stats {
+    font-size: clamp(0.6rem, 2.4vw, 0.8rem);
+  }
+}
+
+@media (max-height: 520px) and (orientation: landscape) {
+  body {
+    padding: 0.5rem;
+  }
+
+  #app {
+    padding: 0.75rem;
+    row-gap: 0.75rem;
+  }
+
+  .game-wrapper {
+    padding: 0.35rem;
+  }
+
+  #game-canvas {
+    max-height: calc(100vh - 140px);
+  }
+
+  .footer {
+    font-size: clamp(0.55rem, 2vw, 0.7rem);
   }
 }

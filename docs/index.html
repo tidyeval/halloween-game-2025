@@ -15,6 +15,13 @@
           <span id="skills-label">Skills: <strong id="skill-count">0</strong></span>
           <span id="streak-label">Streak: <strong id="streak">0</strong></span>
         </div>
+        <div class="hud-actions">
+          <button type="button" id="audio-button" class="hud-action hud-action--primary" hidden>Enable Sound</button>
+          <label class="hud-action hud-action--toggle">
+            <input type="checkbox" id="reduced-motion-toggle" />
+            <span>Reduced Motion</span>
+          </label>
+        </div>
       </header>
 
       <section class="game-wrapper">
@@ -36,6 +43,12 @@
           <button id="restart-button">Run It Again</button>
         </div>
         <div class="toast" id="toast" hidden></div>
+        <div class="orientation-hint" id="orientation-hint" hidden>
+          <div class="orientation-hint__content">
+            <span aria-hidden="true">📱</span>
+            <p>Rotate your device for the best showcase view.</p>
+          </div>
+        </div>
       </section>
 
       <footer class="footer">
