@@ -86,13 +86,26 @@ function startRun() {
   audio.playTheme();
 }
 
-startButton.addEventListener('click', () => {
+function handleStartEvent(event) {
+  if (startButton.disabled) return;
+  if (event.type === 'touchend') {
+    event.preventDefault();
+  }
   startRun();
-});
+}
 
-restartButton.addEventListener('click', () => {
+function handleRestartEvent(event) {
+  if (event.type === 'touchend') {
+    event.preventDefault();
+  }
   startRun();
-});
+}
+
+startButton.addEventListener('click', handleStartEvent);
+startButton.addEventListener('touchend', handleStartEvent, { passive: false });
+
+restartButton.addEventListener('click', handleRestartEvent);
+restartButton.addEventListener('touchend', handleRestartEvent, { passive: false });
 
 document.addEventListener('visibilitychange', () => {
   if (document.hidden) {
