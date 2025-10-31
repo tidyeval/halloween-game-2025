@@ -55,6 +55,7 @@ const game = new SpectralSkillShowcase(canvas, {
     audio.stopTheme();
   },
   onReadyToStart: () => {
+    canvas.classList.add('is-hidden');
     startDialog.hidden = false;
     startButton.disabled = false;
     updateStartButtonLabel();
@@ -91,6 +92,7 @@ function showToast(message) {
 }
 
 function startRun() {
+  canvas.classList.remove('is-hidden');
   startDialog.hidden = true;
   gameoverDialog.hidden = true;
   if (showToast.timeout) {
