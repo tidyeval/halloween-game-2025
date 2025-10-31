@@ -86,26 +86,40 @@ function startRun() {
   audio.playTheme();
 }
 
+let startEventLock = false;
+
 function handleStartEvent(event) {
   if (startButton.disabled) return;
-  if (event.type === 'touchend') {
+  if (startEventLock) {
+    event?.preventDefault?.();
+    return;
+  }
+  if (event && event.type !== 'click') {
     event.preventDefault();
   }
+  startEventLock = true;
+  startButton.blur();
   startRun();
+  setTimeout(() => {
+    startEventLock = false;
+  }, 200);
 }
 
 function handleRestartEvent(event) {
-  if (event.type === 'touchend') {
+  if (event && event.type !== 'click') {
     event.preventDefault();
   }
+  restartButton.blur();
   startRun();
 }
 
-startButton.addEventListener('click', handleStartEvent);
-startButton.addEventListener('touchend', handleStartEvent, { passive: false });
+startButton.addEventListener('pointerdown', handleStartEvent, { passive: false });
+restartButton.addEventListener('pointerdown', handleRestartEvent, { passive: false });
+startButton.addEventListener('touchstart', handleStartEvent, { passive: false });
+restartButton.addEventListener('touchstart', handleRestartEvent, { passive: false });
 
+startButton.addEventListener('click', handleStartEvent);
 restartButton.addEventListener('click', handleRestartEvent);
-restartButton.addEventListener('touchend', handleRestartEvent, { passive: false });
 
 document.addEventListener('visibilitychange', () => {
   if (document.hidden) {
