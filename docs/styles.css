@@ -446,6 +446,16 @@ body {
   .start-intro__cta {
     width: 100%;
   }
+
+  .dialog {
+    position: relative;
+    inset: auto;
+    transform: none;
+  }
+
+  .dialog--start {
+    margin: 0;
+  }
 }
 
 @media (max-width: 900px) {
