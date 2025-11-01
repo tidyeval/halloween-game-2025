@@ -55,7 +55,9 @@ const game = new SpectralSkillShowcase(canvas, {
     audio.stopTheme();
   },
   onReadyToStart: () => {
+    if (window.innerWidth < 768) {
     canvas.classList.add('is-hidden');
+  }
     startDialog.hidden = false;
     startButton.disabled = false;
     updateStartButtonLabel();

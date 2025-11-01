@@ -105,8 +105,16 @@ body {
     linear-gradient(180deg, rgba(10, 8, 20, 0.7) 0%, rgba(8, 6, 14, 0.95) 100%);
 }
 
-#game-canvas.is-hidden {
-  display: none;
+@media (min-width: 768px) {
+  #game-canvas.is-hidden {
+    display: block;
+  }
+}
+
+@media (max-width: 767px) {
+  #game-canvas.is-hidden {
+    display: none;
+  }
 }
 
 .touch-controls {
